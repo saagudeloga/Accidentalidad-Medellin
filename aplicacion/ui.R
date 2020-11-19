@@ -5,6 +5,9 @@ require(shinyjs)
 require(shiny)
 require(shinyWidgets)
 require(markdown)
+require(plotly)
+require(htmltools)
+require(htmlwidgets)
 # cargar libreria de mapas
 library(leaflet, quietly = T)
 library(sf, quietly = T)
@@ -27,15 +30,16 @@ bs4DashPage(title = "VEHAPP", sidebar_collapsed = T,
                                                     bs4SidebarMenuItem("Resumen",tabName = "Resumen",icon = "book-open"),
                                                     bs4SidebarMenuItem("Historico",tabName = "Historico",icon = "car-crash"),
                                                     bs4SidebarMenuItem("Agrupamiento",tabName = "Agrupamiento",icon = "sitemap"),
-                                                    bs4SidebarMenuItem("Prediccion", tabName = "Prediccion", icon = "line-chart"),
+                                                    bs4SidebarMenuItem("Prediccion 2019", tabName = "Prediccion", icon = "bar-chart"),
+                                                    bs4SidebarMenuItem("Prediccion Dia a Dia",tabName = "Prediccion1",icon = "line-chart"),
                                                     bs4SidebarMenuItem("Video explicativo", tabName = "Video", icon = "video"))),
             body = bs4Dash::bs4DashBody(useShinyjs(), chooseSliderSkin("HTML5"),
                                         bs4TabItems(bs4TabItem(tabName = "Inicio", includeMarkdown("opening.md"),
-                                                               fluidRow(column(4,bs4UserCard(title = "Carolina Vergara",
+                                                               fluidRow(column(4,bs4UserCard(title = "Carolina Vergara Clavijo",
                                                                                              subtitle = "Estadistica",
                                                                                              status = "danger",
                                                                                              width = 12,
-                                                                                             src = "Carolina.jpg",
+                                                                                             src = "C1.jpeg",
                                                                                              bs4ListGroup(
                                                                                                width = 36,
                                                                                                height = 8,
@@ -45,43 +49,93 @@ bs4DashPage(title = "VEHAPP", sidebar_collapsed = T,
                                                                                                  src = "https://r-podcast.org"
                                                                                                ),
                                                                                                bs4ListGroupItem(
-                                                                                                 HTML(text = "<i class = 'fa fa-github'>  Carolina </i>"),
+                                                                                                 HTML(text = "<i class = 'fa fa-github'> carolina2808 </i>"),
                                                                                                  type = "action",
-                                                                                                 src = "https://github.com/rpodcast"
+                                                                                                 src = "https://github.com/carolina2808"
                                                                                                )
                                                                                              ))),
-                                                                        column(4,bs4UserCard(title = "Samuel Agudelo",
+                                                                        column(4,bs4UserCard(title = "Samuel Agudelo Gamboa",
                                                                                              subtitle = "Estadistica",
                                                                                              status = "danger",
                                                                                              width = 12,
-                                                                                             src = "Samuel3.jpg")),
-                                                                        column(4, bs4UserCard(title = "Marlon Gaviria",
+                                                                                             src = "S1.jpeg",
+                                                                                             bs4ListGroup(
+                                                                                               width = 36,
+                                                                                               height = 8,
+                                                                                               bs4ListGroupItem(
+                                                                                                 HTML(text = "<i class = 'fa fa-university'> Universidad Nacional de Colombia</i>"),
+                                                                                                 type = NULL,
+                                                                                                 src = "https://r-podcast.org"
+                                                                                               ),
+                                                                                               bs4ListGroupItem(
+                                                                                                 HTML(text = "<i class = 'fa fa-github'>  saagudeloga </i>"),
+                                                                                                 type = "action",
+                                                                                                 src = "https://github.com/saagudeloga"
+                                                                                               )
+                                                                                               ))),
+                                                                        column(4, bs4UserCard(title = "Marlon Gaviria Perez",
                                                                                               subtitle = "Estadistica",
                                                                                               status = "danger",
                                                                                               width = 12,
-                                                                                              src = "Marlon.jpg")),
-                                                                        column(4, bs4UserCard(title = "Nicolas Sarmiento",
+                                                                                              src = "M1.jpeg",
+                                                                                              bs4ListGroup(
+                                                                                                width = 36,
+                                                                                                height = 8,
+                                                                                                bs4ListGroupItem(
+                                                                                                  HTML(text = "<i class = 'fa fa-university'> Universidad Nacional de Colombia</i>"),
+                                                                                                  type = NULL,
+                                                                                                  src = "https://r-podcast.org"
+                                                                                                ),
+                                                                                                bs4ListGroupItem(
+                                                                                                  HTML(text = "<i class = 'fa fa-github'>  MarlonGaviria </i>"),
+                                                                                                  type = "action",
+                                                                                                  src = "https://github.com/MarlonGaviria"
+                                                                                                )
+                                                                                                ))),
+                                                                        column(4, bs4UserCard(title = "Nicolas Sarmiento Garcia",
                                                                                               subtitle = "Estadistica",
                                                                                               status = "danger",
                                                                                               width = 12,
-                                                                                              src = "Nico.jpg")),
+                                                                                              src = "N1.jpeg",
+                                                                                              bs4ListGroup(
+                                                                                                width = 36,
+                                                                                                height = 8,
+                                                                                                bs4ListGroupItem(
+                                                                                                  HTML(text = "<i class = 'fa fa-university'> Universidad Nacional de Colombia</i>"),
+                                                                                                  type = NULL,
+                                                                                                  src = ""
+                                                                                                ),
+                                                                                                bs4ListGroupItem(
+                                                                                                  HTML(text = "<i class = 'fa fa-github'>  nsarmientog </i>"),
+                                                                                                  type = "action",
+                                                                                                  src = "https://github.com/nsarmientog"
+                                                                                                )
+                                                                                                ))),
                                                                         column(4, bs4UserCard(title = "Federico Milotta",
                                                                                               subtitle = "Ingenieria de Sistemas",
                                                                                               status = "danger",
                                                                                               width = 12,
-                                                                                              src = "Federico.jpg"))
+                                                                                              src = "F1.jpeg",
+                                                                                              bs4ListGroup(
+                                                                                                width = 36,
+                                                                                                height = 8,
+                                                                                                bs4ListGroupItem(
+                                                                                                  HTML(text = "<i class = 'fa fa-university'> University of Milan, Italy</i>"),
+                                                                                                  type = NULL,
+                                                                                                  src = ""
+                                                                                                ),
+                                                                                                bs4ListGroupItem(
+                                                                                                  HTML(text = "<i class = 'fa fa-github'> FedericoMilotta </i>"),
+                                                                                                  type = "action",
+                                                                                                  src = "https://github.com/FedericoMilotta"
+                                                                                                )
+                                                                                                )))
                                                                )),
                                                     bs4TabItem(tabName = "Resumen", includeMarkdown("resumen.md")),
                                                     bs4TabItem(tabName = "Historico", sidebarLayout(sidebarPanel(width = 3,
                                                                                                       
-                                                                                                      # prueba
-                                                                                                      #tags$style(".well {background-color: #b3cde0;}"),
-                                                                                                      
-                                                                                                      # imagen de la app
-                                                                                                      #img(src = 'Sest.png', height = "165px"),
-                                                                                                      
                                                                                                       # titulo
-                                                                                                      #titlePanel("Filtros:", windowTitle = "VehApp"),
+                                                                                                      titlePanel("Filtros:", windowTitle = "VehApp"),
                                                                                                       
                                                                                                       # explicacion del mapa
                                                                                                       textOutput("texto_mapa"),
@@ -104,28 +158,30 @@ bs4DashPage(title = "VEHAPP", sidebar_collapsed = T,
                                                                                                                   choices = accidentes),
                                                                                                       
                                                                                                       # version
-                                                                                                      textOutput("version_mapa")
+                                                                                                      textOutput("version_historico")
                                                                                                       
                                                     ), mainPanel(titlePanel(HTML("<center> Historico de Accidentes en Medellín </center>")),
                                                                  leafletOutput("Historico")))
                                                     ),
                                                     bs4TabItem(tabName = "Agrupamiento", sidebarLayout(sidebarPanel(width = 3,
-                                                                                                                     #seleccion anio
-                                                                                                                     sliderInput("anio_Agrup",
-                                                                                                                                 "Peridos:",
-                                                                                                                                 min = 2014,
-                                                                                                                                 max = 2018,
-                                                                                                                                 value = c(2017,2018)),
+                                                                                                                    
+                                                                                                                    # titulo
+                                                                                                                    titlePanel("Filtros:", windowTitle = "VehApp"),
+                                                                                                                    
                                                                                                                      #Seccion comuna
-                                                                                                                     selectInput(inputId = "comuna_Agrup",
+                                                                                                                     selectInput(inputId = "Juanita",
                                                                                                                                  label = "Comuna:",
                                                                                                                                  choices = comunas),
-                                                                                                                     selectInput(inputId = "tipo_accidente_Agrup",
-                                                                                                                                 label = "Tipo de accidente:",
-                                                                                                                                 choices = accidentes)),
-                                                                                                        mainPanel(titlePanel("Agrupamiento"),
-                                                                                                                  leafletOutput("Agrupamiento")))),
+                                                                                                                    
+                                                                                                                    # explicacion del mapa
+                                                                                                                    textOutput("texto_Agrupamiento")),
+                                                                                                        mainPanel(titlePanel(HTML("<center> Agrupamiento de barrios</center>")),
+                                                                                                                  leafletOutput("Agrupamiento"),
+                                                                                                                  textOutput("Texto_explicacion")))),
                                                     bs4TabItem(tabName = "Prediccion", sidebarLayout(sidebarPanel(width = 3,
+                                                                                                                  # titulo
+                                                                                                                  titlePanel("Filtros:", windowTitle = "VehApp"),
+                                                                                                                  
                                                                                                                    selectInput(inputId = "Resolucion",
                                                                                                                                label = "Tipo Prediccion:",
                                                                                                                                choices = c("DIARIO" = "Diario",
@@ -133,11 +189,29 @@ bs4DashPage(title = "VEHAPP", sidebar_collapsed = T,
                                                                                                                                            "MENSUAL" = "Mensual")),
                                                                                                                    selectInput(inputId = "tipo_accidente",
                                                                                                                                label = "Tipo de accidente:",
-                                                                                                                               choices = accidentes)),
+                                                                                                                               choices = accidentes),
+                                                                                                                  # explicacion del mapa
+                                                                                                                  textOutput("texto_Prediccion")),
                                                                                                       mainPanel(titlePanel("Pronosticos 2019 y Observados historicos"),
                                                                                                                 plotlyOutput("Prediccion2", height = "240px", width = "820px"),
                                                                                                                 div(align = "height",
                                                                                                                     class = "width",
                                                                                                                     plotlyOutput("Prediccion1", height = "240px", width = "820px"))))),
+                                                    bs4TabItem(tabName = "Prediccion1", sidebarLayout(sidebarPanel(width = 3,
+                                                                                                                   # titulo
+                                                                                                                   titlePanel("Filtros:", windowTitle = "VehApp"),
+                                                                                                                   dateRangeInput("Fechas",
+                                                                                                                                  label = "Ingrese rango de fecha:",
+                                                                                                                                  start = as.Date("2019-01-01"),
+                                                                                                                                  end = as.Date("2019-12-31")),
+                                                                                                                   selectInput(inputId = "clase_acci",
+                                                                                                                               label = "Tipo de accidente:",
+                                                                                                                               choices = accidentes),
+                                                                                                                   # explicacion del mapa
+                                                                                                                   textOutput("texto_Prediccion1")),
+                                                                                                      mainPanel(titlePanel("Pronosticos Dia a Dia 2019"),
+                                                                                                                plotlyOutput("Prediccion3", height = "270px",width = "820px"),
+                                                                                                                div(align = "height",
+                                                                                                                    plotlyOutput("Prediccion4", height = "240px",width = "820px"))))),
                                                     bs4TabItem(tabName = "Video",
-                                                               HTML('<iframe width="813" height="457" src="https://www.youtube.com/embed/yK3SiymGsHs" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>')))))
+                                                               HTML('<iframe width="870" height="470" src="https://www.youtube.com/embed/zthqqr8NfsQ?feature=oembed&amp" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>')))))

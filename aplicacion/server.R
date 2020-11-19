@@ -12,6 +12,18 @@ shinyServer(function(input, output) {
     library(ggplot2, quietly = T)
     library(ggpubr, quietly = T)
     library(crosstalk, quietly = T)
+    library(caret)
+    library(tidyverse)
+    library(class)
+    library(fastDummies)
+    library(raster)
+    library(mltools)
+    library(highcharter)
+    library(rgdal)
+    library(htmltools)
+    library(htmlwidgets)
+    require(markdown)
+    require(factoextra)
     
     # Carga de datos
     medellin <- fread("Datos/accidentalidad_medellin_final.csv", sep = ",", encoding = "UTF-8", colClasses = "character")
@@ -24,6 +36,10 @@ shinyServer(function(input, output) {
     # Shape barrios y comunas medellin
     shape <- read_sf("Limite_Barrio_Vereda_Catastral.shp")
     
+    # Agrupamiento
+    datos_agrupamiento <- read.csv("Datos/Agrupamiento_barrios.csv", sep = ",", encoding = "UTF-8", colClasses = "character")
+    
+    
     # Carga Datos predicciones
     Pronostico_2019 <- read.csv("Datos/Pronostico_2019.csv", encoding = "UTF-8")
     Pronostico_2019$Clase <- ifelse(Pronostico_2019$Clase == "atropello", "ATROPELLO",
@@ -32,7 +48,12 @@ shinyServer(function(input, output) {
                                                  ifelse(Pronostico_2019$Clase == "incendio","INCENDIO",
                                                         ifelse(Pronostico_2019$Clase == "otro","OTRO",
                                                                ifelse(Pronostico_2019$Clase == "volcamiento","VOLCAMIENTO",0))))))
+    
+    Predicciones_diarias_2019 <- read.csv("Datos/Predicciones_diarias_2019.csv", encoding = "UTF-8")
+    Predicciones_diarias_2019$CLASE <- gsub(pattern = "CAIDA_OCUPANTE", replacement = "CAIDA OCUPANTE", x = Predicciones_diarias_2019$CLASE)
+    Predicciones_diarias_2019$FECHA <- as.Date(Predicciones_diarias_2019$FECHA)
 
+    
     # Ingresando visualizaciones en la aplicacion
     
     # Mapa Agrupamiento
@@ -87,7 +108,10 @@ shinyServer(function(input, output) {
             addProviderTiles(providers$OpenStreetMap) %>%
             addLegend(position = "bottomright", pal = paleta, values = final_mapa$accidentes, title = "Accidentes", opacity = 0.9)
     })
-    
+    output$version_historico <- renderText({
+        "Se presenta mapa de calor para accidentes de transito entre 2014 y 2018 por Barrio, Comuna y tipo de accidente en Medellin. Seleccione por periodos, comuna y clase de accidente"
+    })
+
     # Prediccion
     output$Prediccion1 <- renderPlotly({
         # Variables que se tienen en cuenta
@@ -178,14 +202,14 @@ shinyServer(function(input, output) {
                 layout(title = "PREDICCION ACCIDENTES 2019", xaxis = list(title = "Dia"), yaxis = list(title = "Cantidad Accidentes"))
             
         } else if(tipo_accidente_agrup == "TODOS" & resolucion_agrup == "Semanal"){
-            Pron_Semanal <- subset(Pronostico2019, Grupo_pro == "Semanal")
+            Pron_Semanal <- subset(Pronostico_2019, Grupo_pro == "Semanal")
             Acci_Semanal <- Pron_Semanal %>% group_by(Semana) %>% summarize(total = sum(Cantidad_Predicha))
             
             G1 <- plot_ly(x = factor(Acci_Semanal$Semana), y = Acci_Semanal$total,type = "bar",marker = list(color = rgb(1, 0, 0, 0.5))) %>%
                 layout(title = "PREDICCION ACCIDENTES 2019", xaxis = list(title = "Semana"), yaxis = list(title = "Cantidad Accidentes"))
             
         } else if(tipo_accidente_agrup == "TODOS" & resolucion_agrup == "Mensual"){
-            Pron_Mensual <- subset(Pronostico2019, Grupo_pro == "Mensual")
+            Pron_Mensual <- subset(Pronostico_2019, Grupo_pro == "Mensual")
             Acci_Mensual <- Pron_Mensual %>% group_by(Mes) %>% summarize(total = sum(Cantidad_Predicha))
             Acci_Mensual$Mes <- ifelse(Acci_Mensual$Mes == 1, "Ene",
                                        ifelse(Acci_Mensual$Mes == 2, "Feb",
@@ -241,5 +265,111 @@ shinyServer(function(input, output) {
                 layout(title = "PREDICCION ACCIDENTES 2019", xaxis = list(title = "Mes"), yaxis = list(title = "Cantidad Accidentes"))
         }
         G1
+    })
+    output$texto_Prediccion <- renderText({
+        "Se presenta resumen general de las predicciones para 2019 en las resoluciones Diarias, Semanal y mensual por tipo de accidente"
+    })
+    
+    # Prediccion dia a dia
+    output$Prediccion3 <- renderPlotly({
+        # Variables que se tienen en cuenta
+        clase <- input$clase_acci
+        
+        # Crear nuevos datos si se eligen todos los accidentes
+        if(clase == "TODOS"){
+            datos_grafico <- Predicciones_diarias_2019 %>% group_by(FECHA) %>%
+                filter(FECHA >= input$Fechas[1] & FECHA <= input$Fechas[2]) %>%
+                summarize(Accidentes = sum(ACCIDENTES))
+        } else {
+            datos_grafico <- Predicciones_diarias_2019 %>% group_by(FECHA) %>%
+                filter(FECHA >= input$Fechas[1] & FECHA <= input$Fechas[2]) %>%
+                filter(CLASE == clase) %>%
+                summarize(Accidentes = sum(ACCIDENTES))
+        }
+        
+        plot_ly(data = datos_grafico, x = datos_grafico$FECHA, y = ~Accidentes,
+                type = "scatter", mode = "lines",
+                fill = "tozeroy", line = list(width = 1),
+                hoverinfo = "text+y",
+                hovertext = as.character(datos_grafico$FECHA),
+                color = I(rgb(1, 0, 0, 0.9))) %>%
+            layout(title = "PREDICCION ACCIDENTES 2019 DIARIAS",
+                   xaxis = list(visible = T,
+                                title = "Fecha"),
+                   yaxis = list(title = "Total Accidentes",
+                                rangemode = "nonnegative"))
+    })
+    output$Prediccion4 <- renderPlotly({
+        # Variables que se tienen en cuenta
+        clase <- input$clase_acci
+        
+        # Crear nuevos datos si se eligen todos los accidentes
+        if(clase == "TODOS"){
+            datos_grafico_total <- medellin %>% group_by(FECHA) %>%
+                #filter(FECHA >= input$Fechas[1] & FECHA <= input$Fechas[2]) %>%
+                summarize(Accidentes = n())
+        } else {
+            datos_grafico_total <- medellin %>% group_by(FECHA) %>%
+                #filter(FECHA >= input$Fechas[1] & FECHA <= input$Fechas[2]) %>%
+                filter(CLASE == clase) %>%
+                summarize(Accidentes = n())
+        }
+        
+        plot_ly(data = datos_grafico_total, x = datos_grafico_total$FECHA, y = ~Accidentes,
+                type = "scatter", mode = "lines",
+                fill = "tozeroy", line = list(width = 1),
+                hoverinfo = "text+y",
+                hovertext = as.character(datos_grafico_total$FECHA),
+                color = I(rgb(0, 0, 0, 0.5))) %>%
+            layout(title = "HISTORICO ACCIDENTES ENTRE 2014 Y 2018",
+                   xaxis = list(visible = T,
+                                title = "Fecha"),
+                   yaxis = list(title = "Total Accidentes",
+                                rangemode = "nonnegative"))
+    })
+    output$texto_Prediccion1 <- renderText({
+        "Se presenta predictor de dias puntuales para 2019 y por tipo de accidente. Selecciones ventana de fechas a predecir (Solo 2019) y tipo de accidente"
+    })
+    
+    # Agrupamiento
+    output$Agrupamiento <- renderLeaflet({
+        
+        comuna_agrupa <- input$comuna_Agrup
+        thalia <- c("#FF0000", "#CCFF00", "#00FF66", "#0066FF", "#CC00FF")
+        datos_agrupamiento$colores <- ifelse(datos_agrupamiento$Grupos == "Grupo 1", "#FF0000",
+                                            ifelse(datos_agrupamiento$Grupos == "Grupo 2", "#CCFF00",
+                                                ifelse(datos_agrupamiento$Grupos == "Grupo 3", "#00FF66",
+                                                        ifelse(datos_agrupamiento$Grupos == "Grupo 4", "#0066FF",
+                                                                ifelse(datos_agrupamiento$Grupos == "Grupo 5","#CC00FF",0)))))
+        
+        
+        if(input$Juanita == "TODAS"){
+            dato_mapa <- inner_join(shape, datos_agrupamiento, by = c("CODIGO" = "CB"))
+            # Crear mapa
+            leaflet() %>% addPolygons(data = dato_mapa, opacity = 0.4, color = "#545454",weight = 1, fillColor = dato_mapa$colores,
+                                      fillOpacity = 0.4, label = ~NOMBRE_BAR,
+                                      highlightOptions = highlightOptions(color = "#262626", weight = 3, bringToFront = T, opacity = 1),
+                                      popup = paste("Barrio: ", dato_mapa$NOMBRE_BAR, "<br>", "Grupo: ", dato_mapa$Grupos)) %>%
+                addProviderTiles(providers$OpenStreetMap) %>%
+                addLegend(position = "bottomright", colors = thalia, labels = c("Grupo 1: Muy alta accidentalidad y mortalidad", "Grupo 2: Poca accidentalidad", "Grupo 3: Moderada accidentalidad", "Grupo 4: Alta accidentalidad", "Grupo 5: Muy poca accidentalidad"))
+        } else {
+            dato_mapa1 <- inner_join(shape, datos_agrupamiento, by = c("CODIGO" = "CB")) %>% filter(NOMBRE_COM == input$Juanita)
+            # Crear mapa
+            leaflet() %>% addPolygons(data = dato_mapa1, opacity = 0.4, color = "#545454",weight = 1, fillColor = dato_mapa1$colores,
+                                      fillOpacity = 0.4, label = ~NOMBRE_BAR,
+                                      highlightOptions = highlightOptions(color = "#262626", weight = 3, bringToFront = T, opacity = 1),
+                                      popup = paste("Barrio: ", dato_mapa1$NOMBRE_BAR, "<br>", "Grupo: ", dato_mapa1$Grupos)) %>%
+                addProviderTiles(providers$OpenStreetMap) %>%
+                addLegend(position = "bottomright", colors = thalia, labels = c("Grupo 1: Muy alta accidentalidad y mortalidad", "Grupo 2: Poca accidentalidad", "Grupo 3: Moderada accidentalidad", "Grupo 4: Alta accidentalidad", "Grupo 5: Muy poca accidentalidad"))
+        }
+        
+        
+        
+    })
+    output$texto_Agrupamiento <- renderText({
+        "Se presenta un agrupamiento de barrios con caracteristicas similares en cantidad total de accidentes y mortalidad."
+    })
+    output$Texto_explicacion <- renderText({
+                "."
     })
 })
