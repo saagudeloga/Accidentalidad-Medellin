@@ -1,0 +1,12 @@
+name: VEHAPP
+title: VEHAPP
+username:
+account: samuel-agudelo-gamboa
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3260112
+bundleId: 3879374
+url: https://samuel-agudelo-gamboa.shinyapps.io/VEHAPP/
+when: 1605770387.1484
+asMultiple: FALSE
+asStatic: FALSE

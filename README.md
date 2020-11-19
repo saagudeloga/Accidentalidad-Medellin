@@ -12,7 +12,7 @@ Noviembre 2020
 
 ## **Entregables del trabajo:**
 
-1. Reporte que contiene el entendimiento desarrollado en el trabajo, bibliografía de soporte y la metodología utilizada. (disponible [aquí](https://rpubs.com/saagudeloga2020/69275))
+1. Reporte que contiene el entendimiento desarrollado en el trabajo, bibliografía de soporte y la metodología utilizada. (disponible [aquí](https://rpubs.com/saagudeloga2020/692755))
 2. Aplición web que permite visualizar los datos y la predicción del modelo. (disponible [aquí](https://samuel-agudelo-gamboa.shinyapps.io/VEHAPP/_w_c05ae4e5/_w_c8d9b219/))
 4. Video promocional del aplicativo. (disponible [aquí](https://www.youtube.com/watch?v=zthqqr8NfsQ&ab_channel=MarlonGaviria)) 
 
